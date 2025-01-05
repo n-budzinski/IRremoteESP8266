@@ -261,8 +261,23 @@ String IRBosch144AC::toString(void) const {
                            static_cast<int>(stdAc::fanspeed_t::kAuto),
                            static_cast<int>(stdAc::fanspeed_t::kMedium));
   result += addTempToString(getTemp());
+  result += addTempToString(getFloatTemp());
+  result += addBoolToString(_.TempHalf, kQuietStr);
   result += addBoolToString(_.Quiet, kQuietStr);
   return result;
+}
+
+uint8_t IRBosch144AC::setFloatTemp(float value) {
+  int roundedValue = static_cast<uint8_t>(round(value));
+  float fractionalPart = value - roundedValue;
+  _.TempHalf = (fractionalPart >= 0.5f) & 1;
+  setTemp(roundedValue);
+  return roundedValue;
+}
+
+float IRBosch144AC::getFloatTemp(void) const {
+  float value = static_cast<float>(getTemp()) + _.TempHalf * 0.5f;
+  return value;
 }
 
 void IRBosch144AC::setInvertBytes() {
